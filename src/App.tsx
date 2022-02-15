@@ -1,8 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import './App.css';
+// import './App.css';
 import Photo from './Photo';
-import Box from '@mui/material/Box';
-import { Container } from '@mui/material';
+import {
+  Container,
+  Box,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControl,
+  Button,
+} from '@mui/material';
+import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
+import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 
 //http://jsonplaceholder.typicode.com/photos
 
@@ -16,7 +25,10 @@ export interface IPhoto {
 
 function App() {
   const [photos, setPhotos] = useState<IPhoto[]>([]);
-  const [sort, setSort] = useState<string | null>(null);
+  const [sort, setSort] = useState<number | string | null>('');
+  const [page, setPage] = useState<number>(1);
+
+  const photosOnPage = 20;
 
   useEffect(() => {
     fetch('https://jsonplaceholder.typicode.com/photos')
@@ -24,16 +36,82 @@ function App() {
       .then((json) => setPhotos(json));
   }, []);
 
-  const result = useMemo(() => {
+  const resultPhotos = useMemo<IPhoto[]>(() => {
+    let result: IPhoto[] = JSON.parse(JSON.stringify(photos));
 
-  }, [photos])
+    if (sort !== '') result = result.filter((photo) => photo.albumId === sort);
+
+    return result.filter(
+      (photo, index) => index < page * photosOnPage && index >= (page - 1) * photosOnPage
+    );
+  }, [photos, sort, page]);
+
+  const albumIds = [...Array(101).keys()].filter((item) => item !== 0);
 
   return (
-      <Container maxWidth='lg'>
-        <Box sx={{ bgcolor: '#cfe8fc'}}>
-          {photos.map(photo => <Photo photo={photo} key={photo.id}/>)}
-        </Box>
-      </Container>
+    <Container
+      maxWidth='lg'
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
+    >
+      {/* album selector */}
+      <FormControl
+        sx={{
+          width: '30%',
+          m: 2,
+        }}
+      >
+        <InputLabel id='select-label'>Album Id</InputLabel>
+        <Select
+          labelId='select-label'
+          value={sort}
+          label='Album Id'
+          onChange={(event) => {
+            setPage(1);
+            setSort(event.target.value);
+          }}
+        >
+          <MenuItem value={''}>without sort</MenuItem>
+          {albumIds.map((id) => (
+            <MenuItem value={id} key={id}>
+              {id}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      {/* end album selector */}
+
+      <Box sx={{ bgcolor: '#cfe8fc' }}>
+        {resultPhotos.map((photo) => (
+          <Photo photo={photo} key={photo.id} />
+        ))}
+      </Box>
+
+      {/* page selector */}
+      <Box sx={{ m: 2, display: 'flex', gap: 2 }}>
+        <Button
+          variant='outlined'
+          disabled={page < 2}
+          onClick={() => setPage((prevPage) => prevPage - 1)}
+        >
+          <ArrowCircleLeftIcon />
+        </Button>
+        <Button variant='outlined'>{page}</Button>
+        <Button
+          variant='outlined'
+          disabled={sort !== '' ? photos.filter((photo) => photo.albumId === sort).length/photosOnPage < page : photos.length/photosOnPage <= page }
+          onClick={() => setPage((prevPage) => prevPage + 1)}
+        >
+          <ArrowCircleRightIcon />
+        </Button>
+      </Box>
+      {/* end page selector */}
+
+      {/* modal view */}
+    </Container>
   );
 }
 
