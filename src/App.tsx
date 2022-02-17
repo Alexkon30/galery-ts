@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 // import './App.css';
 import Photo from './Photo';
+import Modal from './Modal';
 import {
   Container,
   Box,
@@ -9,9 +10,12 @@ import {
   MenuItem,
   FormControl,
   Button,
+  Grid,
 } from '@mui/material';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
+
+import { GlobalContext } from './Context';
 
 //http://jsonplaceholder.typicode.com/photos
 
@@ -28,7 +32,7 @@ function App() {
   const [sort, setSort] = useState<number | string | null>('');
   const [page, setPage] = useState<number>(1);
 
-  const photosOnPage = 20;
+  const photosOnPage = 21;
 
   useEffect(() => {
     fetch('https://jsonplaceholder.typicode.com/photos')
@@ -42,26 +46,28 @@ function App() {
     if (sort !== '') result = result.filter((photo) => photo.albumId === sort);
 
     return result.filter(
-      (photo, index) => index < page * photosOnPage && index >= (page - 1) * photosOnPage
+      (photo, index) =>
+        index < page * photosOnPage && index >= (page - 1) * photosOnPage
     );
   }, [photos, sort, page]);
 
   const albumIds = [...Array(101).keys()].filter((item) => item !== 0);
 
   return (
+    <GlobalContext.Provider value={{photos, setPhotos}}>
     <Container
       maxWidth='lg'
       sx={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        gap: 3
       }}
     >
       {/* album selector */}
       <FormControl
         sx={{
           width: '30%',
-          m: 2,
         }}
       >
         <InputLabel id='select-label'>Album Id</InputLabel>
@@ -84,11 +90,13 @@ function App() {
       </FormControl>
       {/* end album selector */}
 
-      <Box sx={{ bgcolor: '#cfe8fc' }}>
+      <Grid container sx={{ 
+        bgcolor: '#cfe8fc', 
+        }}>
         {resultPhotos.map((photo) => (
-          <Photo photo={photo} key={photo.id} />
+          <Photo key={photo.id} photo={photo}/>
         ))}
-      </Box>
+      </Grid>
 
       {/* page selector */}
       <Box sx={{ m: 2, display: 'flex', gap: 2 }}>
@@ -102,7 +110,13 @@ function App() {
         <Button variant='outlined'>{page}</Button>
         <Button
           variant='outlined'
-          disabled={sort !== '' ? photos.filter((photo) => photo.albumId === sort).length/photosOnPage < page : photos.length/photosOnPage <= page }
+          disabled={
+            sort !== ''
+              ? photos.filter((photo) => photo.albumId === sort).length /
+                  photosOnPage <
+                page
+              : photos.length / photosOnPage <= page
+          }
           onClick={() => setPage((prevPage) => prevPage + 1)}
         >
           <ArrowCircleRightIcon />
@@ -111,7 +125,10 @@ function App() {
       {/* end page selector */}
 
       {/* modal view */}
+      <Modal />
+      {/* end modal */}
     </Container>
+    </GlobalContext.Provider>
   );
 }
 
