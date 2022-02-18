@@ -7,9 +7,11 @@ import { useGlobalContext } from './Context';
 
 type PhotoProps = {
   photo: IPhoto;
+  setIsOpen: (value: boolean) => void;
+  setCurrentPhotoInModal: (newPhoto: IPhoto) => void;
 };
 
-const Photo = ({ photo }: PhotoProps) => {
+const Photo = ({ photo, setIsOpen, setCurrentPhotoInModal }: PhotoProps) => {
 
   const {photos, setPhotos} = useGlobalContext();
 
@@ -48,7 +50,12 @@ const Photo = ({ photo }: PhotoProps) => {
           },
         }}
       >
-        <img src={photo.thumbnailUrl} alt={photo.title} />
+        <img src={photo.thumbnailUrl} alt={photo.title} 
+        onClick={() => {
+          setIsOpen(true)
+          setCurrentPhotoInModal(photo)
+        }}
+        />
       </Box>
 
       <CancelIcon

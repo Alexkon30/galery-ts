@@ -8,6 +8,6 @@ export type GlobalContent = {
 
 export const GlobalContext = createContext<GlobalContent>({
   photos: [],
-  setPhotos: () => {}
+  setPhotos: () => {},
 });
 export const useGlobalContext = () => useContext(GlobalContext);
