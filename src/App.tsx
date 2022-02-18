@@ -10,7 +10,7 @@ import {
   Button,
   Grid,
   Modal,
-  Typography
+  Typography,
 } from '@mui/material';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
@@ -37,10 +37,10 @@ function App() {
     id: 0,
     thumbnailUrl: '',
     title: '',
-    url: ''
-  })
+    url: '',
+  });
 
-  const photosOnPage = 21;
+  const photosOnPage: number = 20;
 
   useEffect(() => {
     fetch('https://jsonplaceholder.typicode.com/photos')
@@ -63,22 +63,10 @@ function App() {
 
   return (
     <GlobalContext.Provider value={{ photos, setPhotos }}>
-      <Container
-        maxWidth='lg'
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 3,
-          mt: 2
-        }}
-      >
+      <Container maxWidth='lg' sx={style.mainContainer}>
+
         {/* album selector */}
-        <FormControl
-          sx={{
-            width: '30%',
-          }}
-        >
+        <FormControl sx={style.selectContainer}>
           <InputLabel id='select-label'>Album Id</InputLabel>
           <Select
             labelId='select-label'
@@ -99,31 +87,29 @@ function App() {
         </FormControl>
         {/* end album selector */}
 
-        <Grid
-          container
-          sx={{
-            bgcolor: '#cfe8fc',
-          }}
-        >
+        <Grid container sx={style.photosContainer}>
           {resultPhotos.map((photo) => (
-            <Photo key={photo.id} photo={photo} setIsOpen={setIsOpen} setCurrentPhotoInModal={setCurrentPhotoInModal}/>
+            <Photo
+              key={photo.id}
+              photo={photo}
+              setIsOpen={setIsOpen}
+              setCurrentPhotoInModal={setCurrentPhotoInModal}
+            />
           ))}
         </Grid>
 
         {/* page selector */}
-        <Box sx={{ m: 2, display: 'flex', gap: 2 }}>
+        <Box sx={style.pageSelectorContainer}>
           <Button
             variant='outlined'
             disabled={page < 2}
-            onClick={() => setPage(prevPage => prevPage - 1)}
+            onClick={() => setPage((prevPage) => prevPage - 1)}
           >
             <ArrowCircleLeftIcon />
           </Button>
-          <Typography variant='h6' sx={{
-            p: '0 20px',
-            border: '1px solid lightblue',
-            borderRadius: '4px'
-          }}>{page}</Typography>
+          <Typography variant='h6' sx={style.pageIndicator}>
+            {page}
+          </Typography>
           <Button
             variant='outlined'
             disabled={
@@ -131,7 +117,7 @@ function App() {
                 ? photos.filter((photo) => photo.albumId === sort).length / photosOnPage < page
                 : photos.length / photosOnPage <= page
             }
-            onClick={() => setPage(prevPage => prevPage + 1)}
+            onClick={() => setPage((prevPage) => prevPage + 1)}
           >
             <ArrowCircleRightIcon />
           </Button>
@@ -139,33 +125,62 @@ function App() {
         {/* end page selector */}
 
         {/* modal view */}
-        <Modal
-        open={isOpen}
-        onClose={() => setIsOpen(false)}
-        >
-        <Box sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          bgcolor: 'background.paper',
-          boxShadow: 24,
-          p: 4,
-        }}>
-          <Typography variant="h6">
-            {currentPhotoInModal.title}
-          </Typography>
-          <img src={currentPhotoInModal.url} alt={currentPhotoInModal.title} style={{
-            height: '80vh'
-          }}/>
-        </Box>
-      </Modal>
+        <Modal open={isOpen} onClose={() => setIsOpen(false)}>
+          <Box sx={style.modalContainer}>
+            <Typography variant='h6'>{currentPhotoInModal.title}</Typography>
+            <img
+              src={currentPhotoInModal.url}
+              alt={currentPhotoInModal.title}
+              style={style.modalImage}
+            />
+          </Box>
+        </Modal>
         {/* end modal */}
-
-
       </Container>
     </GlobalContext.Provider>
   );
 }
 
 export default App;
+
+const style = {
+  modalContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    bgcolor: 'background.paper',
+    boxShadow: 24,
+    p: 4,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 1
+  },
+  pageIndicator: {
+    p: '0 20px',
+    border: '1px solid lightblue',
+    borderRadius: '4px',
+  },
+  pageSelectorContainer: {
+    m: 2,
+    display: 'flex',
+    gap: 2,
+  },
+  photosContainer: {
+    bgcolor: '#cfe8fc',
+  },
+  selectContainer: {
+    width: '30%',
+  },
+  mainContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 3,
+    mt: 2,
+  },
+  modalImage: {
+    height: '80vh',
+  }
+};
